@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentor-Student Assignment System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        label, input {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input[type="text"], input[type="submit"] {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .output {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Mentor-Student Assignment System</h1>
+
+    <!-- Create Mentor Form -->
+    <form id="mentorForm">
+        <h3>Create Mentor</h3>
+        <label for="mentorName">Mentor Name:</label>
+        <input type="text" id="mentorName" name="mentorName" required>
+        <input type="submit" value="Create Mentor">
+    </form>
+
+    <!-- Create Student Form -->
+    <form id="studentForm">
+        <h3>Create Student</h3>
+        <label for="studentName">Student Name:</label>
+        <input type="text" id="studentName" name="studentName" required>
+        <input type="submit" value="Create Student">
+    </form>
+
+    <!-- Assign Students to Mentor Form -->
+    <form id="assignForm">
+        <h3>Assign Students to Mentor</h3>
+        <label for="mentorId">Mentor ID:</label>
+        <input type="text" id="mentorId" name="mentorId" required>
+        <label for="studentIds">Student IDs (comma-separated):</label>
+        <input type="text" id="studentIds" name="studentIds" required>
+        <input type="submit" value="Assign Students">
+    </form>
+
+    <!-- Show Students for a Mentor Form -->
+    <form id="showStudentsForm">
+        <h3>Show Students for Mentor</h3>
+        <label for="mentorIdShow">Mentor ID:</label>
+        <input type="text" id="mentorIdShow" name="mentorIdShow" required>
+        <input type="submit" value="Show Students">
+    </form>
+
+    <div class="output" id="output"></div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api'; // Change to your API URL if different
+
+        // Create Mentor
+        document.getElementById('mentorForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const mentorName = document.getElementById('mentorName').value;
+            try {
+                const response = await fetch(`${API_URL}/mentors/create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: mentorName })
+                });
+                const result = await response.json();
+                document.getElementById('output').innerHTML = `Mentor Created: ${result.name}`;
+                document.getElementById('mentorForm').reset();
+            } catch (err) {
+                console.error(err);
+            }
+        });
+
+        // Create Student
+        document.getElementById('studentForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const studentName = document.getElementById('studentName').value;
+            try {
+                const response = await fetch(`${API_URL}/students/create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: studentName })
+                });
+                const result = await response.json();
+                document.getElementById('output').innerHTML = `Student Created: ${result.name}`;
+                document.getElementById('studentForm').reset();
+            } catch (err) {
+                console.error(err);
+            }
+        });
+
+        // Assign Students to Mentor
+        document.getElementById('assignForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const mentorId = document.getElementById('mentorId').value;
+            const studentIds = document.getElementById('studentIds').value.split(',').map(id => id.trim());
+            try {
+                const response = await fetch(`${API_URL}/mentors/${mentorId}/assign-students`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ studentIds })
+                });
+                const result = await response.json();
+                document.getElementById('output').innerHTML = `Students assigned to Mentor ${mentorId}`;
+                document.getElementById('assignForm').reset();
+            } catch (err) {
+                console.error(err);
+            }
+        });
+
+        // Show Students for a particular Mentor
+        document.getElementById('showStudentsForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const mentorId = document.getElementById('mentorIdShow').value;
+            try {
+                const response = await fetch(`${API_URL}/mentors/${mentorId}/students`);
+                const students = await response.json();
+                let studentList = '<h3>Students Assigned:</h3><ul>';
+                students.forEach(student => {
+                    studentList += `<li>${student.name}</li>`;
+                });
+                studentList += '</ul>';
+                document.getElementById('output').innerHTML = studentList;
+            } catch (err) {
+                console.error(err);
+            }
+        });
+    </script>
+
+</body>
+</html>
